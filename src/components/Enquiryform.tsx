@@ -1,115 +1,158 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
-const EnquiryForm: React.FC = () => {
+interface EnquiryFormProps {
+  course?: string; // Optional: pass course name if used for multiple courses
+}
+
+const EnquiryForm: React.FC<EnquiryFormProps> = ({ course }) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    email: "",
     state: "",
     country: "",
-    preferredLanguage: "",
+    language: "",
+    message: "",
+    course: course || "",
   });
-
-  const [status, setStatus] = useState<string | null>(null);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const data = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      data.append(key, value);
+    });
+
     try {
-      const response = await fetch("https://getform.io/f/your-getform-endpoint", {
+      const response = await fetch("https://getform.io/f/arogvqxb", {
         method: "POST",
-        body: new FormData(e.target as HTMLFormElement),
+        body: data,
       });
+
       if (response.ok) {
-        setStatus("✅ Enquiry submitted successfully!");
-        (e.target as HTMLFormElement).reset();
+        toast({
+          title: "Enquiry Sent!",
+          description: "We'll get back to you soon.",
+        });
+        setFormData({
+          name: "",
+          phone: "",
+          state: "",
+          country: "",
+          language: "",
+          message: "",
+          course: course || "",
+        });
       } else {
-        setStatus("❌ Failed to submit. Try again.");
+        toast({
+          title: "Error",
+          description: "Something went wrong. Try again.",
+          variant: "destructive",
+        });
       }
-    } catch {
-      setStatus("❌ Network error. Try again later.");
+    } catch (error) {
+      toast({
+        title: "Network Error",
+        description: "Please check your connection and try again.",
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-xl rounded-2xl">
-      <h2 className="text-2xl font-bold mb-4 text-center">Enquire About This Course</h2>
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto p-4 bg-white rounded shadow">
+      <input type="hidden" name="course" value={formData.course} />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
+      <div>
+        <Label htmlFor="name">Full Name</Label>
+        <Input
+          id="name"
           name="name"
-          placeholder="Full Name"
-          required
           value={formData.name}
-          onChange={handleChange}
-          className="w-full border p-3 rounded-md"
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+          placeholder="Your Name"
         />
-        <input
-          type="tel"
+      </div>
+
+      <div>
+        <Label htmlFor="phone">Phone Number</Label>
+        <Input
+          id="phone"
           name="phone"
-          placeholder="Phone Number"
-          required
+          type="tel"
           value={formData.phone}
-          onChange={handleChange}
-          className="w-full border p-3 rounded-md"
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email Address"
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           required
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full border p-3 rounded-md"
+          placeholder="+91 XXXXX XXXXX"
         />
-        <input
-          type="text"
+      </div>
+
+      <div>
+        <Label htmlFor="state">State</Label>
+        <Input
+          id="state"
           name="state"
-          placeholder="State"
-          required
           value={formData.state}
-          onChange={handleChange}
-          className="w-full border p-3 rounded-md"
+          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+          required
+          placeholder="Your State"
         />
-        <input
-          type="text"
+      </div>
+
+      <div>
+        <Label htmlFor="country">Country</Label>
+        <Input
+          id="country"
           name="country"
-          placeholder="Country"
-          required
           value={formData.country}
-          onChange={handleChange}
-          className="w-full border p-3 rounded-md"
-        />
-
-        <select
-          name="preferredLanguage"
+          onChange={(e) => setFormData({ ...formData, country: e.target.value })}
           required
-          value={formData.preferredLanguage}
-          onChange={handleChange}
-          className="w-full border p-3 rounded-md"
-        >
-          <option value="">Preferred Language</option>
-          <option value="Hindi">Hindi</option>
-          <option value="Punjabi">Punjabi</option>
-          <option value="English">English</option>
-        </select>
+          placeholder="Your Country"
+        />
+      </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition"
+      <div>
+        <Label htmlFor="language">Preferred Language</Label>
+        <Select
+          value={formData.language}
+          onValueChange={(value) => setFormData({ ...formData, language: value })}
         >
-          Submit
-        </button>
-      </form>
+          <SelectTrigger id="language">
+            <SelectValue placeholder="Select language" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="english">English</SelectItem>
+            <SelectItem value="hindi">Hindi</SelectItem>
+            <SelectItem value="punjabi">Punjabi</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {status && <p className="text-center mt-3 text-sm">{status}</p>}
-    </div>
+      <div>
+        <Label htmlFor="message">Message</Label>
+        <Textarea
+          id="message"
+          name="message"
+          value={formData.message}
+          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+          required
+          placeholder="Your message or query..."
+          rows={4}
+        />
+      </div>
+
+      <Button type="submit" className="w-full">
+        Send Enquiry
+      </Button>
+    </form>
   );
 };
 
