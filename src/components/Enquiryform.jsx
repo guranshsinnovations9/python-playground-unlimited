@@ -16,7 +16,7 @@ export default function EnquiryForm() {
       });
 
       if (response.ok) {
-        setStatus("Message sent successfully!");
+        setStatus("Messages sent successfully!");
         form.reset();
       } else {
         setStatus("Something went wrong. Try again.");
