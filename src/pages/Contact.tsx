@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, MessageCircle, MapPin, Clock } from "lucide-react";
-import EnquiryForm from "@/components/EnquiryForm"; // adjust path if needed
+import EnquiryForm from "@/components/EnquiryForm.tsx"; // adjust path if needed
 
 const Contact = () => {
   return (
