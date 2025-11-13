@@ -1,114 +1,130 @@
 import { useState } from "react";
-import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
-export default function EnquiryForm() {
-  const [status, setStatus] = useState("");
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const data = new FormData(form);
-
-    try {
-      const response = await fetch("https://getform.io/f/arogvqxb", {
-        method: "POST",
-        body: data,
-      });
-
-      if (response.ok) {
-        setStatus("Messages sent successfully!");
-        form.reset();
-      } else {
-        setStatus("Something went wrong. Try again.");
-      }
-    } catch (error) {
-      setStatus("Error sending message.");
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto p-4 bg-white rounded shadow">
-      <input
-        type="text"
-        name="name"
-        placeholder="Your Name"
-        required
-        className="input input-bordered w-full"
-      />
-      <input
-        type="email"
-        name="email"
-        placeholder="Your Email"
-        required
-        className="input input-bordered w-full"
-      />
-      <textarea
-        name="message"
-        placeholder="Your Message"
-        required
-        className="textarea textarea-bordered w-full"
-        rows={5}
-      ></textarea>
-      <button type="submit" className="btn btn-primary w-full">
-        Send Message
-      </button>
-      {status && <p className="text-center text-sm mt-2">{status}</p>}
-    </form>
-  );
+interface EnquiryFormProps {
+  endpoint?: string; // optional, defaults to your Getform link
+  uniqueId?: string; // optional, unique string to avoid ID conflicts
 }
 
-export default function EnquiryForm() {
-  const [status, setStatus] = useState("");
+export default function EnquiryForm({
+  endpoint = "https://getform.io/f/arogvqxb",
+  uniqueId = "",
+}: EnquiryFormProps) {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.target;
+    const form = e.currentTarget;
     const data = new FormData(form);
 
+    // Debug: log form data
+    console.log("Submitting form data:");
+    for (let [key, value] of data.entries()) {
+      console.log(key, value);
+    }
+
+    setLoading(true);
+
     try {
-      const response = await fetch("https://getform.io/f/arogvqxb", {
+      const response = await fetch(endpoint, {
         method: "POST",
         body: data,
       });
 
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
+
       if (response.ok) {
-        setStatus("Message sent successfully!");
+        toast({
+          title: "Message Sent!",
+          description: "We'll contact you soon.",
+        });
         form.reset();
       } else {
-        setStatus("Something went wrong. Try again.");
+        toast({
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      setStatus("Error sending message.");
+      toast({
+        title: "Network Error",
+        description: "Could not send your message. Try again later.",
+        variant: "destructive",
+      });
+      console.error("Network error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto p-4 bg-white rounded shadow">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 max-w-md mx-auto p-6 bg-white rounded shadow"
+    >
+      {/* Full Name */}
       <input
         type="text"
+        id={`name-${uniqueId}`}
         name="name"
-        placeholder="Your Name"
+        placeholder="Full Name"
         required
         className="input input-bordered w-full"
       />
+
+      {/* Email */}
       <input
         type="email"
+        id={`email-${uniqueId}`}
         name="email"
-        placeholder="Your Email"
+        placeholder="Email"
         required
         className="input input-bordered w-full"
       />
+
+      {/* Phone */}
+      <input
+        type="tel"
+        id={`phone-${uniqueId}`}
+        name="phone"
+        placeholder="+91 XXXXX XXXXX"
+        required
+        className="input input-bordered w-full"
+      />
+
+      {/* Course Selection */}
+      <select
+        id={`course-${uniqueId}`}
+        name="course"
+        required
+        className="select select-bordered w-full"
+      >
+        <option value="">Select Course</option>
+        <option value="Python">Python</option>
+        <option value="AI">AI</option>
+      </select>
+
+      {/* Message */}
       <textarea
+        id={`message-${uniqueId}`}
         name="message"
         placeholder="Your Message"
         required
         className="textarea textarea-bordered w-full"
         rows={5}
       ></textarea>
-      <button type="submit" className="btn btn-primary w-full">
-        Send Message
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className={`btn btn-primary w-full ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
+        disabled={loading}
+      >
+        {loading ? "Sending..." : "Send Message"}
       </button>
-      {status && <p className="text-center text-sm mt-2">{status}</p>}
     </form>
   );
 }
