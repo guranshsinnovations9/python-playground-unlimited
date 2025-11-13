@@ -1,130 +1,116 @@
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState } from "react";
 
-interface EnquiryFormProps {
-  endpoint?: string; // optional, defaults to your Getform link
-  uniqueId?: string; // optional, unique string to avoid ID conflicts
-}
+const EnquiryForm: React.FC = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    state: "",
+    country: "",
+    preferredLanguage: "",
+  });
 
-export default function EnquiryForm({
-  endpoint = "https://getform.io/f/arogvqxb",
-  uniqueId = "",
-}: EnquiryFormProps) {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
-
-    // Debug: log form data
-    console.log("Submitting form data:");
-    for (let [key, value] of data.entries()) {
-      console.log(key, value);
-    }
-
-    setLoading(true);
-
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch("https://getform.io/f/your-getform-endpoint", {
         method: "POST",
-        body: data,
+        body: new FormData(e.target as HTMLFormElement),
       });
-
-      console.log("Response status:", response.status);
-      console.log("Response ok:", response.ok);
-
       if (response.ok) {
-        toast({
-          title: "Message Sent!",
-          description: "We'll contact you soon.",
-        });
-        form.reset();
+        setStatus("✅ Enquiry submitted successfully!");
+        (e.target as HTMLFormElement).reset();
       } else {
-        toast({
-          title: "Error",
-          description: "Something went wrong. Please try again.",
-          variant: "destructive",
-        });
+        setStatus("❌ Failed to submit. Try again.");
       }
-    } catch (error) {
-      toast({
-        title: "Network Error",
-        description: "Could not send your message. Try again later.",
-        variant: "destructive",
-      });
-      console.error("Network error:", error);
-    } finally {
-      setLoading(false);
+    } catch {
+      setStatus("❌ Network error. Try again later.");
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 max-w-md mx-auto p-6 bg-white rounded shadow"
-    >
-      {/* Full Name */}
-      <input
-        type="text"
-        id={`name-${uniqueId}`}
-        name="name"
-        placeholder="Full Name"
-        required
-        className="input input-bordered w-full"
-      />
+    <div className="max-w-md mx-auto p-6 bg-white shadow-xl rounded-2xl">
+      <h2 className="text-2xl font-bold mb-4 text-center">Enquire About This Course</h2>
 
-      {/* Email */}
-      <input
-        type="email"
-        id={`email-${uniqueId}`}
-        name="email"
-        placeholder="Email"
-        required
-        className="input input-bordered w-full"
-      />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          name="name"
+          placeholder="Full Name"
+          required
+          value={formData.name}
+          onChange={handleChange}
+          className="w-full border p-3 rounded-md"
+        />
+        <input
+          type="tel"
+          name="phone"
+          placeholder="Phone Number"
+          required
+          value={formData.phone}
+          onChange={handleChange}
+          className="w-full border p-3 rounded-md"
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email Address"
+          required
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full border p-3 rounded-md"
+        />
+        <input
+          type="text"
+          name="state"
+          placeholder="State"
+          required
+          value={formData.state}
+          onChange={handleChange}
+          className="w-full border p-3 rounded-md"
+        />
+        <input
+          type="text"
+          name="country"
+          placeholder="Country"
+          required
+          value={formData.country}
+          onChange={handleChange}
+          className="w-full border p-3 rounded-md"
+        />
 
-      {/* Phone */}
-      <input
-        type="tel"
-        id={`phone-${uniqueId}`}
-        name="phone"
-        placeholder="+91 XXXXX XXXXX"
-        required
-        className="input input-bordered w-full"
-      />
+        <select
+          name="preferredLanguage"
+          required
+          value={formData.preferredLanguage}
+          onChange={handleChange}
+          className="w-full border p-3 rounded-md"
+        >
+          <option value="">Preferred Language</option>
+          <option value="Hindi">Hindi</option>
+          <option value="Punjabi">Punjabi</option>
+          <option value="English">English</option>
+        </select>
 
-      {/* Course Selection */}
-      <select
-        id={`course-${uniqueId}`}
-        name="course"
-        required
-        className="select select-bordered w-full"
-      >
-        <option value="">Select Course</option>
-        <option value="Python">Python</option>
-        <option value="AI">AI</option>
-      </select>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition"
+        >
+          Submit
+        </button>
+      </form>
 
-      {/* Message */}
-      <textarea
-        id={`message-${uniqueId}`}
-        name="message"
-        placeholder="Your Message"
-        required
-        className="textarea textarea-bordered w-full"
-        rows={5}
-      ></textarea>
-
-      {/* Submit Button */}
-      <button
-        type="submit"
-        className={`btn btn-primary w-full ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
-        disabled={loading}
-      >
-        {loading ? "Sending..." : "Send Message"}
-      </button>
-    </form>
+      {status && <p className="text-center mt-3 text-sm">{status}</p>}
+    </div>
   );
-} 
+};
+
+export default EnquiryForm;
