@@ -17,18 +17,44 @@ const Contact = () => {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Updated handleSubmit to send data to Getform
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Message Sent!",
-      description: "We'll get back to you as soon as possible.",
-    });
-    setFormData({ name: "", email: "", phone: "", message: "" });
+    const form = e.target as HTMLFormElement;
+    const data = new FormData(form);
+
+    try {
+      const response = await fetch("https://getform.io/f/arogvqxb", {
+        method: "POST",
+        body: data,
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Message Sent!",
+          description: "We'll get back to you as soon as possible.",
+        });
+        setFormData({ name: "", email: "", phone: "", message: "" });
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Network error. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
     <div className="min-h-screen py-20 px-4">
       <div className="container mx-auto max-w-6xl">
+        {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -41,8 +67,9 @@ const Contact = () => {
           </p>
         </motion.div>
 
+        {/* Main Grid */}
         <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Contact Information */}
+          {/* Contact Info */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -59,10 +86,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Phone</h3>
-                    <a
-                      href="tel:+919877038519"
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <a href="tel:+919877038519" className="text-muted-foreground hover:text-primary transition-colors">
                       +91 98770 38519
                     </a>
                   </div>
@@ -74,10 +98,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Email</h3>
-                    <a
-                      href="mailto:guranshsinghinnovations9@gmail.com"
-                      className="text-muted-foreground hover:text-primary transition-colors break-all"
-                    >
+                    <a href="mailto:guranshsinghinnovations9@gmail.com" className="text-muted-foreground hover:text-primary transition-colors break-all">
                       guranshsinghinnovations9@gmail.com
                     </a>
                   </div>
@@ -89,12 +110,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">WhatsApp</h3>
-                    <a
-                      href="https://wa.me/919877038519"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-[#25D366] transition-colors"
-                    >
+                    <a href="https://wa.me/919877038519" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-[#25D366] transition-colors">
                       Chat with us instantly
                     </a>
                   </div>
@@ -120,9 +136,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">Location</h3>
-                    <p className="text-muted-foreground">
-                      Patiala, Punjab, India
-                    </p>
+                    <p className="text-muted-foreground">Patiala, Punjab, India</p>
                   </div>
                 </div>
               </CardContent>
@@ -145,6 +159,7 @@ const Contact = () => {
                     <Label htmlFor="name">Full Name</Label>
                     <Input
                       id="name"
+                      name="name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
@@ -156,6 +171,7 @@ const Contact = () => {
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -168,6 +184,7 @@ const Contact = () => {
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input
                       id="phone"
+                      name="phone"
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -180,6 +197,7 @@ const Contact = () => {
                     <Label htmlFor="message">Message</Label>
                     <Textarea
                       id="message"
+                      name="message"
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
